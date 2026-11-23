@@ -272,6 +272,20 @@ else if (["sin", "cos", "tan"].includes(value)) {
   });
 });
 
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .then(() => {
+        console.log("VLOX offline system ready!");
+      })
+      .catch(error => {
+        console.log("Service worker error:", error);
+      });
+  });
+}
+</script>
+
 </script> 
-Thanks for coming
+He is VLOX
 </body>
