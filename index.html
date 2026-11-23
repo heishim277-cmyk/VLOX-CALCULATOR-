@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VLOX Calculator</title>
+</head>
+<body>
+
+  
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #070b1c;
+    color: white;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  h1 {
+    color: #00c8ff;
+    text-shadow: 0 0 15px #007bff;
+  }
+
+  .calculator {
+    width: 100%;
+    max-width: 350px;
+    background: #111a33;
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid #245cff;
+    box-shadow: 0 0 25px #132d77;
+  }
+
+  #display {
+    width: 100%;
+    height: 75px;
+    background: #070b1c;
+    color: #00e5ff;
+    border: 1px solid #245cff;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    padding: 10px;
+    font-size: 30px;
+    text-align: right;
+  }
+
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  button {
+    height: 60px;
+    border: none;
+    border-radius: 12px;
+    background: #1d2b50;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+  }
+
+  button:active {
+    background: #087cff;
+  }
+  
+#scientificButtons {
+  display: none;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+#scientificButtons button {
+  background: #263d75;
+  color: #00e5ff;
+}
+
+</style>
+</head>
+
+  <h1>VLOX Calculator</h1>
+
+  <div class="calculator">
+    <input type="text" id="display" value="0" readonly>
+    
+    <button id="sciToggle">SCI</button>
+    <div id="scientificButtons" style="display: none;">
+  <button>sin</button>
+  <button>cos</button>
+  <button>tan</button>
+  <button>√</button>
+  <button>x²</button>
+  <button>%</button>
+  <button>π</button>
+  <button>(</button>
+  <button>)</button>
+    </div>
+    <div class="buttons">  
+    
+      <button>C</button>
+      <button>÷</button>
+      <button>×</button>
+      <button>−</button>
+
+      <button>7</button>
+      <button>8</button>
+      <button>9</button>
+      <button>+</button>
+
+      <button>4</button>
+      <button>5</button>
+      <button>6</button>
+      <button>.</button>
+
+      <button>1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>=</button>
+
+      <button>0</button>
+    </div>
+  </div>
+
+</body>
+</html>
+
+
+<script>
+  
+const display = document.getElementById("display");
+const buttons = document.querySelectorAll("button");
+
+let expression = "";
+
+function calculate() {
+  if (!expression.trim()) {
+    throw new Error("Empty expression");
+  }
+
+  const result = Function(
+    '"use strict"; return (' + expression + ')'
+  )();
+
+  if (typeof result !== "number" ||
+      !Number.isFinite(result)) {
+    throw new Error("Invalid result");
+  }
+
+  return result;
+}
+
+// SCI button
+const sciToggle = document.getElementById("sciToggle");
+const scientificButtons =
+  document.getElementById("scientificButtons");
+
+sciToggle.addEventListener("click", () => {
+  if (scientificButtons.style.display === "none") {
+    scientificButtons.style.display = "grid";
+    sciToggle.textContent = "SCI ON";
+  } else {
+    scientificButtons.style.display = "none";
+    sciToggle.textContent = "SCI";
+  }
+});
+
+// Calculator buttons
+buttons.forEach(button => {
+
+  if (button.id === "sciToggle") return;
+
+  button.addEventListener("click", () => {
+    const value = button.textContent;
+
+    try {
+      if (value === "C") {
+        expression = "";
+        display.value = "0";
+      }
+
+      else if (value === "=") {
+        const result = calculate();
+        display.value = result;
+        expression = String(result);
+      }
+
+      else if (value === "√") {
+        const result = calculate();
+
+        if (result < 0) throw new Error("Invalid");
+
+        expression = String(Math.sqrt(result));
+        display.value = expression;
+      }
+
+      else if (value === "x²") {
+        const result = calculate();
+
+        expression = String(result ** 2);
+        display.value = expression;
+      }
+
+        
+else if (["sin", "cos", "tan"].includes(value)) {
+  const angle = calculate();
+  const radians = angle * Math.PI / 180;
+
+  let result;
+
+  if (value === "sin") {
+    result = Math.sin(radians);
+  }
+
+  else if (value === "cos") {
+    result = Math.cos(radians);
+  }
+
+  else {
+    result = Math.tan(radians);
+  }
+
+  if (!Number.isFinite(result)) {
+    throw new Error("Invalid result");
+  }
+
+  expression = String(
+  Number(result.toFixed(10))
+);
+
+  display.value = expression;
+}
+
+
+      else if (value === "π") {
+        expression += "Math.PI";
+        display.value = expression;
+      }
+
+      else if (value === "%") {
+        const result = calculate() / 100;
+        expression = String(result);
+        display.value = expression;
+      }
+
+      else {
+        const symbols = {
+          "×": "*",
+          "÷": "/",
+          "−": "-"
+        };
+
+        expression += symbols[value] || value;
+        display.value = expression;
+      }
+
+    } catch {
+      display.value = "Error";
+      expression = "";
+    }
+  });
+});
+
+</script> 
+Thanks for coming
+</body>
